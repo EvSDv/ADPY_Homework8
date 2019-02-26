@@ -64,17 +64,23 @@ def get_students(course_id):  # возвращает студентов опре
 
 def add_students(course_id, students):  # создает студентов и # записывает их на курс
     conn = pg.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD)
-    for student in students:
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO Student (name, gpa, birth) values (%s, %s, %s) RETURNING id;
-            """, (student['name'], student['gpa'], student['birth']))
-        id_new_student = cur.fetchone()[0]
-        cur = conn.cursor()
-        cur.execute("""
-            insert into student_course (student_id, course_id) values (%s, %s)
-            """, (id_new_student, course_id))  # добавить связь студент-курс
-    conn.commit()
+    cur = conn.cursor()
+    cur.execute("""
+                SELECT id FROM Course WHERE id = %s;
+                """, str(course_id))
+    if cur.fetchone() is not None:
+
+        for student in students:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO Student (name, gpa, birth) values (%s, %s, %s) RETURNING id;
+                """, (student['name'], student['gpa'], student['birth']))
+            id_new_student = cur.fetchone()[0]
+            cur = conn.cursor()
+            cur.execute("""
+                insert into student_course (student_id, course_id) values (%s, %s)
+                """, (id_new_student, course_id))  # добавить связь студент-курс
+        conn.commit()
     conn.close()
 
 
@@ -94,7 +100,7 @@ if __name__ == '__main__':
     add_student(student)
     print(get_student('1'))  # тест get_student()
     add_cours({'name': 'Нетология'})  # Тест add_cours()
-
+    #
     students = [{'name': 'Batman Bin Superman', 'gpa': 3, 'birth': '1980-05-12'},
                 {'name': 'Андреев Андрей Андреевич', 'gpa': 4, 'birth': '1982-04-16'},
                 {'name': 'Михайлов Михаил Михайлович', 'gpa': 5, 'birth': '1990-08-07'},
