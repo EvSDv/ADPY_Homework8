@@ -49,7 +49,7 @@ def get_student(student_id):
             FROM Student
             WHERE id = %s ;
             """, str(student_id))
-            return cur.fetchone()[0]
+            return cur.fetchall()
 
 
 def get_students(course_id):  # возвращает студентов определенного курса
